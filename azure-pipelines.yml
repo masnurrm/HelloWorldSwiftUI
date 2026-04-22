@@ -1,0 +1,23 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'macOS-latest'
+
+variables:
+  projectPath: 'HelloWorldBasic/HelloWorldBasic.xcodeproj'
+  scheme: 'HelloWorldBasic'
+  sdk: 'iphonesimulator'
+  configuration: 'Debug'
+
+steps:
+- task: Xcode@5
+  displayName: 'Kompilasi iOS - Simulator Target'
+  inputs:
+    actions: 'build'
+    configuration: '$(configuration)'
+    sdk: '$(sdk)'
+    xcWorkspacePath: '$(projectPath)'
+    scheme: '$(scheme)'
+    packageApp: false
+    useXcpretty: true
