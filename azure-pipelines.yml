@@ -45,9 +45,7 @@ stages:
             scheme: '$(scheme)'
             packageApp: false
             useXcpretty: true
-            args: >
-              -derivedDataPath $(derivedDataPath)/HelloWorldBasic
-              ONLY_ACTIVE_ARCH=NO
+            args: '-derivedDataPath $(derivedDataPath)/HelloWorldBasic ONLY_ACTIVE_ARCH=NO'
 
         - task: Xcode@5
           displayName: 'Run Unit Tests (HelloWorldBasic)'
@@ -59,9 +57,10 @@ stages:
             scheme: '$(scheme)'
             packageApp: false
             useXcpretty: true
-            args: >
-              -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
-              -derivedDataPath $(derivedDataPath)/HelloWorldBasic
+            # Use built-in destination inputs to avoid quote-stripping issue
+            destinationPlatformOption: 'iOS'
+            destinationSimulators: 'iPhone 16 Pro'
+            args: '-derivedDataPath $(derivedDataPath)/HelloWorldBasic'
           continueOnError: false
 
         - task: PublishTestResults@2
@@ -96,9 +95,7 @@ stages:
             scheme: '$(scheme)'
             packageApp: false
             useXcpretty: true
-            args: >
-              -derivedDataPath $(derivedDataPath)/HelloWorldTextField
-              ONLY_ACTIVE_ARCH=NO
+            args: '-derivedDataPath $(derivedDataPath)/HelloWorldTextField ONLY_ACTIVE_ARCH=NO'
 
         - task: Xcode@5
           displayName: 'Run Unit Tests (HelloWorldTextField)'
@@ -110,9 +107,10 @@ stages:
             scheme: '$(scheme)'
             packageApp: false
             useXcpretty: true
-            args: >
-              -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
-              -derivedDataPath $(derivedDataPath)/HelloWorldTextField
+            # Use built-in destination inputs to avoid quote-stripping issue
+            destinationPlatformOption: 'iOS'
+            destinationSimulators: 'iPhone 16 Pro'
+            args: '-derivedDataPath $(derivedDataPath)/HelloWorldTextField'
           continueOnError: false
 
         - task: PublishTestResults@2
