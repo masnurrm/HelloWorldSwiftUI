@@ -1,25 +1,125 @@
 trigger:
-- main
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - HelloWorldBasic/**
+      - HelloWorldTextField/**
+
+pr:
+  branches:
+    include:
+      - main
 
 pool:
-  vmImage: 'macOS-latest'
+  vmImage: 'macos-15'
 
 variables:
-  # Menggunakan wildcard agar pipeline otomatis mencari file .xcodeproj di root atau sub-folder mana pun
-  projectPath: '**/*.xcodeproj' 
-  # Mengubah scheme sesuai dengan nama default project pada repositori macagua/HelloWorldSwiftUI
-  scheme: 'HelloWorldSwiftUI' 
   sdk: 'iphonesimulator'
   configuration: 'Debug'
+  scheme: 'HelloWorld'
+  derivedDataPath: '$(Build.ArtifactStagingDirectory)/DerivedData'
 
-steps:
-- task: Xcode@5
-  displayName: 'Kompilasi iOS - Simulator Target'
-  inputs:
-    actions: 'build'
-    configuration: '$(configuration)'
-    sdk: '$(sdk)'
-    xcWorkspacePath: '$(projectPath)'
-    scheme: '$(scheme)'
-    packageApp: false
-    useXcpretty: true
+stages:
+
+# ─────────────────────────────────────────────
+# STAGE 1: Build HelloWorldBasic
+# ─────────────────────────────────────────────
+- stage: Build_HelloWorldBasic
+  displayName: 'Build - HelloWorld Basic'
+  jobs:
+    - job: BuildBasic
+      displayName: 'Xcode Build (HelloWorldBasic)'
+      steps:
+
+        - checkout: self
+
+        - task: Xcode@5
+          displayName: 'Build HelloWorldBasic for Simulator'
+          inputs:
+            actions: 'build'
+            configuration: '$(configuration)'
+            sdk: '$(sdk)'
+            xcWorkspacePath: 'HelloWorldBasic/HelloWorld.xcodeproj'
+            scheme: '$(scheme)'
+            packageApp: false
+            useXcpretty: true
+            args: >
+              -derivedDataPath $(derivedDataPath)/HelloWorldBasic
+              ONLY_ACTIVE_ARCH=NO
+
+        - task: Xcode@5
+          displayName: 'Run Unit Tests (HelloWorldBasic)'
+          inputs:
+            actions: 'test'
+            configuration: '$(configuration)'
+            sdk: '$(sdk)'
+            xcWorkspacePath: 'HelloWorldBasic/HelloWorld.xcodeproj'
+            scheme: '$(scheme)'
+            packageApp: false
+            useXcpretty: true
+            args: >
+              -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+              -derivedDataPath $(derivedDataPath)/HelloWorldBasic
+          continueOnError: false
+
+        - task: PublishTestResults@2
+          displayName: 'Publish Test Results (HelloWorldBasic)'
+          condition: always()
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: '$(derivedDataPath)/HelloWorldBasic/**/TEST-*.xml'
+            failTaskOnFailedTests: true
+            testRunTitle: 'HelloWorldBasic - Unit Tests'
+
+# ─────────────────────────────────────────────
+# STAGE 2: Build HelloWorldTextField
+# ─────────────────────────────────────────────
+- stage: Build_HelloWorldTextField
+  displayName: 'Build - HelloWorld TextField'
+  dependsOn: Build_HelloWorldBasic
+  jobs:
+    - job: BuildTextField
+      displayName: 'Xcode Build (HelloWorldTextField)'
+      steps:
+
+        - checkout: self
+
+        - task: Xcode@5
+          displayName: 'Build HelloWorldTextField for Simulator'
+          inputs:
+            actions: 'build'
+            configuration: '$(configuration)'
+            sdk: '$(sdk)'
+            xcWorkspacePath: 'HelloWorldTextField/HelloWorld.xcodeproj'
+            scheme: '$(scheme)'
+            packageApp: false
+            useXcpretty: true
+            args: >
+              -derivedDataPath $(derivedDataPath)/HelloWorldTextField
+              ONLY_ACTIVE_ARCH=NO
+
+        - task: Xcode@5
+          displayName: 'Run Unit Tests (HelloWorldTextField)'
+          inputs:
+            actions: 'test'
+            configuration: '$(configuration)'
+            sdk: '$(sdk)'
+            xcWorkspacePath: 'HelloWorldTextField/HelloWorld.xcodeproj'
+            scheme: '$(scheme)'
+            packageApp: false
+            useXcpretty: true
+            args: >
+              -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+              -derivedDataPath $(derivedDataPath)/HelloWorldTextField
+          continueOnError: false
+
+        - task: PublishTestResults@2
+          displayName: 'Publish Test Results (HelloWorldTextField)'
+          condition: always()
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: '$(derivedDataPath)/HelloWorldTextField/**/TEST-*.xml'
+            failTaskOnFailedTests: true
+            testRunTitle: 'HelloWorldTextField - Unit Tests'
