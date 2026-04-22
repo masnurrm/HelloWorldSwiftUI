@@ -5,8 +5,10 @@ pool:
   vmImage: 'macOS-latest'
 
 variables:
-  projectPath: 'HelloWorldBasic/HelloWorldBasic.xcodeproj'
-  scheme: 'HelloWorldBasic'
+  # Menggunakan wildcard agar pipeline otomatis mencari file .xcodeproj di root atau sub-folder mana pun
+  projectPath: '**/*.xcodeproj' 
+  # Mengubah scheme sesuai dengan nama default project pada repositori macagua/HelloWorldSwiftUI
+  scheme: 'HelloWorldSwiftUI' 
   sdk: 'iphonesimulator'
   configuration: 'Debug'
 
